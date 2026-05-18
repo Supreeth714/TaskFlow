@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}My Tasks{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">My Tasks</h1>
+  <a href="{% url 'task_create' %}" class="btn btn-primary">+ New Task</a>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-sm-6"><input class="form-control" name="q" value="{{ q }}" placeholder="Search title..."></div>
+  <div class="col-sm-4"><select class="form-select" name="status">
+    <option value="">All statuses</option>
+    <option value="todo" {% if status == 'todo' %}selected{% endif %}>To Do</option>
+    <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>In Progress</option>
+    <option value="done" {% if status == 'done' %}selected{% endif %}>Done</option>
+  </select></div>
+  <div class="col-sm-2"><button class="btn btn-secondary w-100">Filter</button></div>
+</form>
+<div id="task-list" class="row g-3">
+{% for t in tasks %}
+  <div class="col-md-6 col-lg-4" data-id="{{ t.id }}">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <h5 class="card-title {% if t.status == 'done' %}text-decoration-line-through text-muted{% endif %}">{{ t.title }}</h5>
+          <span class="badge bg-{% if t.priority == 'high' %}danger{% elif t.priority == 'medium' %}warning{% else %}secondary{% endif %}">{{ t.get_priority_display }}</span>
+        </div>
+        <p class="card-text small text-muted">{{ t.description|truncatechars:120 }}</p>
+        <p class="small mb-2"><strong>Status:</strong> {{ t.get_status_display }}{% if t.due_date %} · <strong>Due:</strong> {{ t.due_date }}{% endif %}</p>
+        <div class="d-flex gap-2">
+          <a href="{% url 'task_update' t.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+          <form method="post" action="{% url 'task_toggle' t.id %}">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-success">{% if t.status == 'done' %}Reopen{% else %}Complete{% endif %}</button>
+          </form>
+          <a href="{% url 'task_delete' t.id %}" class="btn btn-sm btn-outline-danger ms-auto">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <div class="col-12"><div class="alert alert-info">No tasks yet. Create your first one!</div></div>
+{% endfor %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Optional realtime updates via WebSocket
+(function(){
+  if (!window.WebSocket) return;
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  try {
+    const ws = new WebSocket(proto + '://' + location.host + '/ws/tasks/');
+    ws.onmessage = () => { /* simplest: reload to reflect changes */ location.reload(); };
+  } catch(e) {}
+})();
+</script>
+{% endblock %}

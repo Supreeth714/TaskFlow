@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}
+<div class="row justify-content-center"><div class="col-md-6">
+  <div class="card shadow-sm"><div class="card-body">
+    <h1 class="h4 mb-3">Create Account</h1>
+    <form method="post">{% csrf_token %}
+      {% for f in form %}<div class="mb-3"><label class="form-label">{{ f.label }}</label>{{ f }}{% if f.help_text %}<div class="form-text small">{{ f.help_text|safe }}</div>{% endif %}{% if f.errors %}<div class="text-danger small">{{ f.errors }}</div>{% endif %}</div>{% endfor %}
+      <button class="btn btn-success w-100">Register</button>
+    </form>
+  </div></div>
+</div></div>
+<style>input{width:100%;padding:.375rem .75rem;border:1px solid #ced4da;border-radius:.375rem}</style>
+{% endblock %}
